@@ -8,10 +8,10 @@ spec:
     - name: main
       inputs:
         parameters:
-          - name: message
-            value: "{{workflow.parameters.message}}"
+          - name: checkId
+            value: "{{workflow.parameters.checkId}}"
       container:
         image: busybox
         command: [echo]
-        args: ["{{inputs.parameters.message}}"]
+        args: ["{{inputs.parameters.checkId}}"]
   entrypoint: main

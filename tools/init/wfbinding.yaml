@@ -8,9 +8,9 @@ spec:
     selector: discriminator == "github-push"
   submit:
     workflowTemplateRef:
-      name: my-wf-tmple
+      name: push-template
     arguments:
       parameters:
-      - name: message
+      - name: checkId
         valueFrom:
-          event: payload.message
+          event: payload.checkId
