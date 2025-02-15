@@ -24,7 +24,6 @@ jobs:
           role-to-assume: arn:aws:iam::390402568971:role/ArgoStarter
           role-session-name: ActionRunner
           aws-region: ${{ env.AWS_REGION }}
-      # Hello from AWS: WhoAmI
       - name: Sts GetCallerIdentity
         run: |
           aws sts get-caller-identity
@@ -64,6 +63,10 @@ jobs:
           ARGO_TOKEN="Bearer $(kubectl get secret github.com.service-account-token -o=jsonpath='{.data.token}' -n argo | base64 -d)"
           curl --insecure https://localhost:2746/api/v1/events/argo/github-push \
             -H "Authorization: $ARGO_TOKEN" \
-            -d '{"checkId": "'$GH_CHECK_ID'"}'
+            -d '{"checkId": "'$GH_CHECK_ID'", "pr": "'$PR_ID'", "repo": "'$REPO'", "headSha": "'$HEAD_SHA'", "baseRef": "'$BASE_REF'"}'
         env:
           GH_CHECK_ID: ${{ steps.open-argo-check.outputs.checkId }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.base_ref }}
+          PR_ID: ${{ github.event.pull_request.number }}
