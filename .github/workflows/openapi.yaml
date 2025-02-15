@@ -42,4 +42,5 @@ jobs:
           curl http://localhost:2746/api/v1/events/argo/my-discriminator \
             -H "Authorization: $ARGO_TOKEN" \
             -d '{"message": "hello"}'
+      - run: echo "Argo wf started"
       
