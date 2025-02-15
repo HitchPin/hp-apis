@@ -1,18 +1,22 @@
-{ inputs, ...}: {
-  imports = [
-    inputs.devshell.flakeModule
-  ];
-
-  perSystem = { config, ... }: {
-    devshells.default = {
-      packages = [
-        "coreutils"
-      ];
-      commands = [
-        { package = config.packages.aws; category = "CLI Tools"; }
-        { package = config.packages.git; category = "CLI Tools"; }
-        { package = config.packages.openssh; category = "CLI Tools"; }
-      ];
-    };
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
   };
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem
+      (system:
+        let
+          overlays = [ (import rust-overlay) ];
+          pkgs = import nixpkgs {
+            inherit system overlays;
+          };
+        in
+        with pkgs;
+        {
+          devShells.default = mkShell {
+            buildInputs = [ rust-bin.stable.latest.default ];
+          };
+        }
+      );
 }
