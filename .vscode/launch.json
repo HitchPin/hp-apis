@@ -1,0 +1,19 @@
+{
+  "configurations": [
+    {
+      "name": "Gen",
+      "program": "${workspaceFolder}/packages/ts-client-codegen/bin/gen.mts",
+      "request": "launch",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "type": "node",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "dlx",
+        "tsx"
+      ],
+      "cwd": "${workspaceFolder}/packages/ts-client-codegen"
+    }
+  ]
+}
