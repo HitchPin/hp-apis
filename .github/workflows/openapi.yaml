@@ -37,7 +37,7 @@ jobs:
 
   StartArgoWorkflow:
     runs-on: ubuntu-latest
-    needs: AssumeRoleAndCallIdentity
+    needs: ConfigureArgo
     defaults:
       run:
         shell: bash
