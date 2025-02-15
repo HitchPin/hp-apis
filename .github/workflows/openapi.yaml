@@ -21,8 +21,8 @@ jobs:
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
-          role-to-assume: arn:aws:iam::390402568971:role/GitHubActionEKSRole
-          role-session-name: GitHub_ActionRunner
+          role-to-assume: arn:aws:iam::390402568971:role/ArgoStarter
+          role-session-name: ActionRunner
           aws-region: ${{ env.AWS_REGION }}
       # Hello from AWS: WhoAmI
       - name: Sts GetCallerIdentity
