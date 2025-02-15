@@ -18,16 +18,16 @@
   outputs = inputs@{ flake-parts, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
-        ./.nix-modules/cli-packages.nix
-        ./.nix-modules/cli-devshell.nix
-        ./.nix-modules/docker-packages.nix
-        ./.nix-modules/docker-devshell.nix
-        ./.nix-modules/dotnet-packages.nix
-        ./.nix-modules/dotnet-devshell.nix
-        ./.nix-modules/nodejs-packages.nix
-        ./.nix-modules/nodejs-devshell.nix
-        ./.nix-modules/python-packages.nix
-        ./.nix-modules/python-devshell.nix
+        ./tools/.nix-modules/cli-packages.nix
+        ./tools/.nix-modules/cli-devshell.nix
+        ./tools/.nix-modules/docker-packages.nix
+        ./tools/.nix-modules/docker-devshell.nix
+        ./tools/.nix-modules/dotnet-packages.nix
+        ./tools/.nix-modules/dotnet-devshell.nix
+        ./tools/.nix-modules/nodejs-packages.nix
+        ./tools/.nix-modules/nodejs-devshell.nix
+        ./tools/.nix-modules/python-packages.nix
+        ./tools/.nix-modules/python-devshell.nix
       ];
       systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
       perSystem = { config, self', inputs', pkgs, system, ... }: {

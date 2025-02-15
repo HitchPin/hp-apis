@@ -34,15 +34,6 @@ jobs:
       - uses: cachix/install-nix-action@v27
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-
-  StartArgoWorkflow:
-    runs-on: ubuntu-latest
-    needs: ConfigureArgo
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./tools/.nix-modules
-    steps:
       - uses: nicknovitski/nix-develop@v1
       - run: aws eks update-kubeconfig --name serious-rock-mountain
       - run: kubectl get pods -n argo
