@@ -1,0 +1,17 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: push-template
+  namespace: argo
+spec:
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: message
+            value: "{{workflow.parameters.message}}"
+      container:
+        image: busybox
+        command: [echo]
+        args: ["{{inputs.parameters.message}}"]
+  entrypoint: main
