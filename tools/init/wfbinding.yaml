@@ -2,6 +2,7 @@ apiVersion: argoproj.io/v1alpha1
 kind: WorkflowEventBinding
 metadata:
   name: github-push-initiator
+  namespace: argo
 spec:
   event:
     # metadata header name must be lowercase to match in selector
