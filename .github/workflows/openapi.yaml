@@ -37,3 +37,9 @@ jobs:
       - uses: nicknovitski/nix-develop@v1
       - run: aws eks update-kubeconfig --name serious-rock-mountain
       - run: kubectl get pods -n argo
+      - run: kubectl -n argo port-forward service/argo-server 2746:2746 &
+      - run : |
+          curl http://localhost:2746/api/v1/events/argo/my-discriminator \
+            -H "Authorization: $ARGO_TOKEN" \
+            -d '{"message": "hello"}'
+      
