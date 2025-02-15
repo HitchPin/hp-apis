@@ -1,0 +1,155 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "URL Shortcode Service",
+    "version": "1.0.0",
+    "description": "A service that facilitates the creation of short URLs to save space and bake in free expiration abilities."
+  },
+  "servers": [
+    {
+      "url": "https://staging.hitchp.in",
+      "description": "Staging environment"
+    },
+    {
+      "url": "https://hitchp.in",
+      "description": "Production environment"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "External": {
+        "type": "string",
+        "default": "P1D",
+        "description": "How long before the link stops working.",
+        "examples": [
+          "P1D",
+          "P7D",
+          "P1M"
+        ],
+        "externalDocs": {
+          "description": "Test suite for valid duration values.",
+          "url": "https://github.com/json-schema-org/JSON-Schema-Test-Suite/blob/main/tests/draft2020-12/optional/format/duration.json"
+        }
+      },
+      "ShortenUrlRequest": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "sqids",
+              "nanoids"
+            ]
+          },
+          "group": {
+            "type": "string",
+            "description": "Group to associate this short link with. This determines the shuffled alphabet to use, as well as what monotically increasing series to use for applicable sequencers."
+          },
+          "maxAge": {
+            "$ref": "#/components/schemas/External"
+          },
+          "recordsRetention": {
+            "type": "string",
+            "default": "P1M",
+            "description": "How long to keep a record of this short link. This affects whether or not its possible to re-issue this short link again, as well as for what duration of time after expiration that the oritingal URL will return a 410 Gone. After retention period is up, it will start returning a 404."
+          },
+          "minEntropy": {
+            "type": "integer",
+            "minimum": 4,
+            "maximum": 128,
+            "default": 20,
+            "description": "Minimum number of random characters to pull from."
+          },
+          "maxEntropy": {
+            "type": "integer",
+            "minimum": 20,
+            "maximum": 256,
+            "default": 64,
+            "description": "Maximum number of random characters to pull from."
+          },
+          "template": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "kind",
+          "group",
+          "template"
+        ]
+      },
+      "ShortenUrlResponse": {
+        "type": "object",
+        "properties": {
+          "shortUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "shortUrl"
+        ]
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/": {
+      "post": {
+        "operationId": "ShortenUrl",
+        "description": "Create pre-rendered receipt the invoice id.",
+        "summary": "Register a pre-printed receipt so that the client can securely retrieve the PDF copy.",
+        "tags": [
+          "rendering"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ShortenUrlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response that can be used to retrieve the receipt PDF.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ShortenUrlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Could not find rendered receipt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

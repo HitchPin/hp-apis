@@ -65,6 +65,7 @@ jobs:
             -H "Authorization: $ARGO_TOKEN" \
             -d '{"checkId": "'$GH_CHECK_ID'", "pr": "'$PR_ID'", "repo": "'$REPO'", "headSha": "'$HEAD_SHA'", "baseRef": "'$BASE_REF'"}'
         env:
+          GH_TOKEN: ${{ steps.generate-gh-app-token.outputs.token }}
           GH_CHECK_ID: ${{ steps.open-argo-check.outputs.checkId }}
           REPO: ${{ github.repository }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
