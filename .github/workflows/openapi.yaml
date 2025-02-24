@@ -24,12 +24,6 @@ jobs:
           role-to-assume: arn:aws:iam::390402568971:role/ArgoStarter
           role-session-name: ActionRunner
           aws-region: ${{ env.AWS_REGION }}
-      - name: Sts GetCallerIdentity
-        run: |
-          aws sts get-caller-identity
-      - name: Configure kubectl
-        run: |
-          aws eks update-kubeconfig --name serious-rock-mountain
       - uses: cachix/install-nix-action@v27
         with:
           nix_path: nixpkgs=channel:nixos-unstable
