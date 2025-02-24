@@ -34,7 +34,7 @@ jobs:
         with:
           nix_path: nixpkgs=channel:nixos-unstable
       - uses: nicknovitski/nix-develop@v1
-      - run: aws eks update-kubeconfig --name serious-rock-mountain
+      - run: aws eks update-kubeconfig --name orthoplex
       - run: kubectl get pods -n argo
       - run: kubectl -n argo port-forward service/argo-server 2746:2746 &
       - name: Generate GitHub App Token
@@ -60,7 +60,7 @@ jobs:
             /repos/${{ github.repository }}/check-runs)
           echo "checkId=$CHECKID" >> $GITHUB_OUTPUT
       - run : |
-          ARGO_TOKEN="Bearer $(kubectl get secret github.com.service-account-token -o=jsonpath='{.data.token}' -n argo | base64 -d)"
+          ARGO_TOKEN="Bearer $(kubectl get secret github.service-account-token -o=jsonpath='{.data.token}' -n argo | base64 -d)"
           curl --insecure https://localhost:2746/api/v1/events/argo/github-push \
             -H "Authorization: $ARGO_TOKEN" \
             -d '{"checkId": "'$GH_CHECK_ID'", "pr": "'$PR_ID'", "repo": "'$REPO'", "headSha": "'$HEAD_SHA'", "baseRef": "'$BASE_REF'"}'
