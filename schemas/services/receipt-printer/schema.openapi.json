@@ -502,7 +502,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "https://apis.hitchpin.dev/schemas/ProblemDetails"
+                  "$ref": "https://schemas.hitchpin.dev/schemas/ProblemDetails"
                 }
               }
             }
