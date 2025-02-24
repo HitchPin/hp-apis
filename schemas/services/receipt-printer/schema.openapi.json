@@ -16,6 +16,14 @@
     }
   ],
   "components": {
+    "securitySchemes": {
+      "sigv4Reference": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "x-amazon-apigateway-authtype": "awsSigv4"
+      }
+    },
     "schemas": {
       "RenderReceiptRequest": {
         "type": "object",
@@ -171,6 +179,39 @@
                   "sender"
                 ]
               },
+              "fees": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "object",
+                      "properties": {
+                        "currencyCode": {
+                          "type": "string",
+                          "enum": [
+                            "usd"
+                          ]
+                        },
+                        "cents": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "currencyCode",
+                        "cents"
+                      ]
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "description"
+                  ]
+                }
+              },
               "paymentObjects": {
                 "type": "array",
                 "items": {
@@ -306,6 +347,7 @@
             },
             "required": [
               "invoice",
+              "fees",
               "paymentObjects",
               "timestamp",
               "updated",
@@ -404,7 +446,13 @@
   "paths": {
     "/render": {
       "put": {
+        "operationId": "RenderReceipt",
         "description": "Get user data by its id",
+        "security": [
+          {
+            "sigv4Reference": []
+          }
+        ],
         "parameters": [
           {
             "in": "header",
@@ -439,14 +487,22 @@
             "content": {
               "application/pdf": {
                 "schema": {
-                  "type": "string",
-                  "format": "binary"
+                  "$ref": "#/components/schemas/RenderReceiptResponse"
                 }
               },
               "image/svg+xml": {
                 "schema": {
-                  "type": "string",
-                  "format": "binary"
+                  "$ref": "#/components/schemas/RenderReceiptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Could not render receipt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "https://apis.hitchpin.dev/schemas/ProblemDetails"
                 }
               }
             }
@@ -456,19 +512,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "type",
-                    "message"
-                  ]
+                  "$ref": "https://apis.hitchpin.dev/schemas/ProblemDetails"
                 }
               }
             }
@@ -478,10 +522,16 @@
     },
     "/render-link": {
       "post": {
+        "operationId": "CreateRenderedReceiptUrl",
         "description": "Create pre-rendered receipt the invoice id.",
         "summary": "Register a pre-printed receipt so that the client can securely retrieve the PDF copy.",
         "tags": [
           "rendering"
+        ],
+        "security": [
+          {
+            "sigv4Reference": []
+          }
         ],
         "requestBody": {
           "content": {
