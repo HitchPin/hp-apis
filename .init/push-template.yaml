@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: push-template
+  namespace: argo
+spec:
+  templates:
+    - name: main
+      inputs:
+        parameters:
+          - name: checkId
+            value: "{{workflow.parameters.checkId}}"
+          - name: pr
+            value: "{{workflow.parameters.pr}}"
+          - name: repo
+            value: "{{workflow.parameters.repo}}"
+          - name: headSha
+            value: "{{workflow.parameters.headSha}}"
+          - name: baseRef
+            value: "{{workflow.parameters.baseRef}}"
+          - name: ghToken
+            value: "{{workflow.parameters.ghToken}}"
+      container:
+        image: busybox
+        command: [echo]
+        args: ["{{inputs.parameters.checkId}}"]
+  entrypoint: main

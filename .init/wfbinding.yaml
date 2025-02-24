@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowEventBinding
+metadata:
+  name: github-push-initiator
+  namespace: argo
+spec:
+  event:
+    # metadata header name must be lowercase to match in selector
+    selector: discriminator == "github-push"
+  submit:
+    workflowTemplateRef:
+      name: push-template
+    arguments:
+      parameters:
+      - name: checkId
+        valueFrom:
+          event: payload.checkId
+      - name: pr
+        valueFrom:
+          event: payload.pr
+      - name: repo
+        valueFrom:
+          event: payload.repo
+      - name: headSha
+        valueFrom:
+          event: payload.headSha
+      - name: baseRef
+        valueFrom:
+          event: payload.baseRef
+      - name: ghToken
+        valueFrom:
+          event: payload.ghToken

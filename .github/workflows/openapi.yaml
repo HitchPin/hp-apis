@@ -29,7 +29,6 @@ jobs:
           nix_path: nixpkgs=channel:nixos-unstable
       - uses: nicknovitski/nix-develop@v1
       - run: aws eks update-kubeconfig --name orthoplex
-      - run: kubectl get pods -n argo
       - run: kubectl -n argo port-forward service/argo-server 2746:2746 &
       - name: Generate GitHub App Token
         uses: tibdex/github-app-token@v2.1.0
