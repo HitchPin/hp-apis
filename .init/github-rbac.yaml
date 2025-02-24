@@ -19,11 +19,11 @@ metadata:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: read-pods
+  name: github
 subjects:
 - kind: ServiceAccount
-  name: argo:github
-  apiGroup: rbac.authorization.k8s.io
+  name: github
+  namespace: argo
 roleRef:
   kind: Role
   name: github
