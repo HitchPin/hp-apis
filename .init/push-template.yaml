@@ -45,4 +45,4 @@ spec:
       container:
         image: busybox
         command: [sh, -c]
-        args: ["echo '{{inputs.parameters.jobmanifest}}' | tee /tmp/jobmanifest.json"]
+        args: ["cat /tmp/manifest.json"]
