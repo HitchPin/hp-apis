@@ -4,7 +4,9 @@ metadata:
   name: push-template
   namespace: argo
 spec:
+  archiveLogs: true
   entrypoint: manifest-example
+  serviceAccountName: argo-artifacts
   templates:
     - name: manifest-example
       steps:
