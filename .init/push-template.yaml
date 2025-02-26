@@ -4,24 +4,43 @@ metadata:
   name: push-template
   namespace: argo
 spec:
+  entrypoint: artifact-example
   templates:
-    - name: main
-      inputs:
+    steps:
+    - - name: generate-manifest
+        template: json-combiner
+    - - name: consume-manifest
+        template: openapi-previewer
+        arguments:
+          artifacts:
+          - name: jobmanifest
+            from: "{{steps.generate-artifact.outputs.artifacts.jobmanifest}}"
+    - name: json-combiner
+      arguments:
         parameters:
-          - name: checkId
-            value: "{{workflow.parameters.checkId}}"
-          - name: pr
-            value: "{{workflow.parameters.pr}}"
-          - name: repo
-            value: "{{workflow.parameters.repo}}"
-          - name: headSha
-            value: "{{workflow.parameters.headSha}}"
-          - name: baseRef
-            value: "{{workflow.parameters.baseRef}}"
-          - name: ghToken
-            value: "{{workflow.parameters.ghToken}}"
+          - name: jobmanifest
+            value: |
+              {
+                "checkId": "{{workflow.parameters.checkId}}",
+                "pr": "{{workflow.parameters.pr}}",
+                "repo": "{{workflow.parameters.repo}}",
+                "headSha": "{{workflow.parameters.headSha}}",
+                "baseRef": "{{workflow.parameters.baseRef}}",
+                "ghToken": "{{workflow.parameters.ghToken}}"
+              }
       container:
         image: busybox
-        command: [echo]
-        args: ["{{inputs.parameters.checkId}}"]
-  entrypoint: main
+        command: [sh, -c]
+        args: ["echo '{{inputs.parameters.jobmanifest}}' | tee /tmp/jobmanifest.json"]
+      outputs:
+        artifacts:
+        - name: jobmanifest
+          path: /tmp/jobmanifest.json
+    - name: openapi-previewer
+      arguments:
+        parameters:
+          - name: jobmanifest
+      container:
+        image: busybox
+        command: [sh, -c]
+        args: ["echo '{{inputs.parameters.jobmanifest}}' | tee /tmp/jobmanifest.json"]
