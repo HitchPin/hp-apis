@@ -15,7 +15,7 @@ spec:
           arguments:
             artifacts:
             - name: jobmanifest
-              from: "{{steps.generate-artifact.outputs.artifacts.jobmanifest}}"
+              from: "{{steps.generate-manifest.outputs.artifacts.jobmanifest}}"
     - name: json-combiner
       inputs:
         parameters:
