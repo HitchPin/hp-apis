@@ -17,7 +17,7 @@ spec:
             - name: jobmanifest
               from: "{{steps.generate-artifact.outputs.artifacts.jobmanifest}}"
     - name: json-combiner
-      arguments:
+      inputs:
         parameters:
           - name: jobmanifest
             value: |
@@ -38,7 +38,7 @@ spec:
         - name: jobmanifest
           path: /tmp/jobmanifest.json
     - name: openapi-previewer
-      arguments:
+      inputs:
         parameters:
           - name: jobmanifest
       container:
