@@ -4,17 +4,18 @@ metadata:
   name: push-template
   namespace: argo
 spec:
-  entrypoint: artifact-example
+  entrypoint: manifest-example
   templates:
-    steps:
-    - - name: generate-manifest
-        template: json-combiner
-    - - name: consume-manifest
-        template: openapi-previewer
-        arguments:
-          artifacts:
-          - name: jobmanifest
-            from: "{{steps.generate-artifact.outputs.artifacts.jobmanifest}}"
+    - name: manifest-example
+      steps:
+      - - name: generate-manifest
+          template: json-combiner
+      - - name: consume-manifest
+          template: openapi-previewer
+          arguments:
+            artifacts:
+            - name: jobmanifest
+              from: "{{steps.generate-artifact.outputs.artifacts.jobmanifest}}"
     - name: json-combiner
       arguments:
         parameters:
