@@ -45,7 +45,7 @@ spec:
           - name: jobmanifest
             path: /tmp/manifest.json
       script:
-        image: hpoa:latest
-        command: [/bin/bash]
+        image: johndavisdotdev/hpoa:latest
+        command: [/bin/sh]
         source: |
           hpoa auth
