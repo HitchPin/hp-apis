@@ -44,7 +44,8 @@ spec:
         artifacts:
           - name: jobmanifest
             path: /tmp/manifest.json
-      container:
-        image: busybox
-        command: [sh, -c]
-        args: ["cat /tmp/manifest.json"]
+      script:
+        image: hpoa:latest
+        command: [/bin/bash]
+        source: |
+          hpoa auth
