@@ -31,6 +31,8 @@ spec:
                 "baseRef": "{{workflow.parameters.baseRef}}",
                 "ghToken": "{{workflow.parameters.ghToken}}"
               }
+      nodeSelector:
+        kubernetes.io/arch: "arm64"
       container:
         image: busybox
         command: [sh, -c]
