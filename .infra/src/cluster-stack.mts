@@ -3,11 +3,14 @@ import { Construct } from 'constructs';
 import {
   aws_ec2 as ec2,
   aws_iam as iam,
+  aws_eks as eks
 } from 'aws-cdk-lib';
 import * as c from './components/index.mjs';
 import { App } from 'cdk8s';
+import { Namespace } from 'cdk8s-plus-32';
 
 export class ClusterStack extends cdk.Stack {
+  readonly db: c.Database;
   constructor(scope: Construct, id: string, props: cdk.StackProps) {
     super(scope, id, props);
 
@@ -32,14 +35,7 @@ export class ClusterStack extends cdk.Stack {
       type: 'gp3',
       isDefault: true
     });
-    const armCap = new c.ArmCapacity(cdk8sApp, 'ArmCapacity', {
-      name: 'arm-cap',
-      vpc: network,
-      securityGroup: sg,
-      subnets: {
-        subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS
-      }
-    });
+
     const ghRole = new iam.Role(this, 'Role', {
       assumedBy: new iam.FederatedPrincipal('arn:aws:iam::390402568971:oidc-provider/token.actions.githubusercontent.com', {
         "StringEquals": {
@@ -53,38 +49,38 @@ export class ClusterStack extends cdk.Stack {
         iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess')
       ]
     });
-    
     const ghRunner = new c.GitHubRunner(cdk8sApp, 'GitHubRunner', {
       name: 'github',
       role: ghRole
     });
     const ghNode = cluster.cluster.addCdk8sChart('GitHub', ghRunner).node;
     const storageNode = cluster.cluster.addCdk8sChart('Storage', storageChart).node;
-    /*
-    const armNode = cluster.cluster.addCdk8sChart('ARM', armCap).node;
-    const argoNode = cluster.cluster.addHelmChart('ArgoWorkflows', {
-      createNamespace: true,
+
+    const r = new iam.Role(this, 'ArgoWorkflowsRole', {
+      assumedBy: new iam.ServicePrincipal('pods.eks.amazonaws.com').withSessionTags(),
+    });
+    const workflows = new c.ArgoWorkflows(this, 'Workflows', {
+      name: 'argo-workflows',
       namespace: 'argo',
-      repository: 'https://argoproj.github.io/argo-helm',
-      version: '0.45.4',
-      chart: 'argo-workflows',
-      values: {
-        workflow: {
-          serviceAccount: {
-            create: true,
-            name: "hpoa"
-          }
-        },
-        rbac: {
-          create: true
-        },
-        controller: {
-          workflowNamespaces: [
-            'default'
-          ]
-        },
-      }
-    }).node;
+      role: r
+    });
+    cluster.cluster.addCdk8sChart('Workflows', workflows);
+    workflows.node.addDependency(this.db);
+
+    const ra = new eks.CfnPodIdentityAssociation(this, 'Association', {
+      namespace: 'argo',
+      roleArn: r.roleArn,
+      serviceAccount: 'flowsvc',
+      clusterName: cluster.cfnCluster.name!
+    });
+    ra.addDependency(cluster.cfnCluster);
+    /*
+    this.db = new c.Database(cdk8sApp, 'Db', {
+      name: 'dbcluster',
+      namespace: 'database'
+    });
+    cluster.cluster.addCdk8sChart('Db', this.db);
+    this.db.node.addDependency(cluster.cfnCluster);
     */
     ghNode.addDependency(cluster.cfnCluster);
     storageNode.addDependency(cluster.cfnCluster);
