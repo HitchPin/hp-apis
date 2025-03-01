@@ -50,4 +50,4 @@ spec:
         image: johndavisdotdev/hpoa:latest
         command: [/bin/sh]
         source: |
-          hpoa auth /tmp/jobmanifest.json
+          hpoa auth /tmp/manifest.json
