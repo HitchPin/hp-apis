@@ -1,0 +1,46 @@
+apiVersion: eks.amazonaws.com/v1
+kind: NodeClass
+metadata:
+  name: arm-cap
+spec:
+  role: "AmazonEKSAutoNodeRole"
+  subnetSelectorTerms:
+    - id: "subnet-0d1fbf0af0ebc453e"
+    - id: "subnet-06cf5b02c77cd6f64"
+    - id: "subnet-0e24721604a56e4e4"
+    - id: "subnet-02503682c7d887ddd"
+    - id: "subnet-051a44bca76aeb193"
+  securityGroupSelectorTerms:
+    - id: "sg-0adff9628c3d56d4f"
+  ephemeralStorage:
+    size: "160Gi"
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: arm-cap
+spec:
+  template:
+    metadata:
+      labels:
+        billing-team: hitchpin
+    spec:
+      nodeClassRef:
+        group: eks.amazonaws.com
+        kind: NodeClass
+        name: agnostic
+
+      requirements:
+        - key: "eks.amazonaws.com/instance-category"
+          operator: In
+          values: ["c", "m", "r"]
+        - key: "eks.amazonaws.com/instance-cpu"
+          operator: In
+          values: ["4", "8", "16", "32"]
+        - key: "kubernetes.io/arch"
+          operator: In
+          values: ["arm64", "amd64"]
+
+  limits:
+    cpu: "1000"
+    memory: 1000Gi

@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: push-template
+  namespace: argo
+spec:
+  archiveLogs: true
+  entrypoint: manifest-example
+  serviceAccountName: argo-artifacts
+  templates:
+    - name: manifest-example
+      steps:
+      - - name: generate-manifest
+          template: json-combiner
+      - - name: consume-manifest
+          template: openapi-previewer
+          arguments:
+            artifacts:
+            - name: jobmanifest
+              from: "{{steps.generate-manifest.outputs.artifacts.jobmanifest}}"
+    - name: json-combiner
+      inputs:
+        parameters:
+          - name: jobmanifest
+            value: |
+              {
+                "checkId": "{{workflow.parameters.checkId}}",
+                "pr": "{{workflow.parameters.pr}}",
+                "repo": "{{workflow.parameters.repo}}",
+                "headSha": "{{workflow.parameters.headSha}}",
+                "baseRef": "{{workflow.parameters.baseRef}}",
+                "baseSha": "{{workflow.parameters.baseSha}}",
+                "ghToken": "{{workflow.parameters.ghToken}}"
+              }
+      nodeSelector:
+        kubernetes.io/arch: "arm64"
+      container:
+        image: busybox
+        command: [sh, -c]
+        args: ["echo '{{inputs.parameters.jobmanifest}}' | tee /tmp/jobmanifest.json"]
+      outputs:
+        artifacts:
+        - name: jobmanifest
+          path: /tmp/jobmanifest.json
+    - name: openapi-previewer
+      inputs:
+        artifacts:
+          - name: jobmanifest
+            path: /tmp/manifest.json
+      script:
+        image: johndavisdotdev/hpoa:latest
+        command: [/bin/sh]
+        source: |
+          hpoa auth /tmp/manifest.json

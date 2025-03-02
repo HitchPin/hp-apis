@@ -1,0 +1,1 @@
+This is the home of the HitchPin API Schemas for all our services.

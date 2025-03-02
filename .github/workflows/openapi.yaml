@@ -1,16 +1,17 @@
 # This is a basic workflow to help you get started with Actions
-name: Start OpenAI Argo build
+name: Start Argo Pipeline
 
 # Controls when the action will run. Invokes the workflow on push events but only for the main branch
-on: [push, pull_request]
+on: [pull_request]
 
 env:
   AWS_REGION : "us-east-1"
+  CLUSTER_NAME: "citadel"
 
 # Permission can be added at job level or workflow level    
 permissions:
-      id-token: write   # This is required for requesting the JWT
-      contents: read    # This is required for actions/checkout
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
 
 jobs:
   ConfigureArgo:
@@ -19,30 +20,49 @@ jobs:
       - name: Git clone the repository
         uses: actions/checkout@v4
       - name: configure aws credentials
-        uses: aws-actions/configure-aws-credentials@v1.7.0
+        uses: aws-actions/configure-aws-credentials@v4.1.0
         with:
-          role-to-assume: arn:aws:iam::390402568971:role/GitHubActionEKSRole
-          role-session-name: GitHub_ActionRunner
+          role-to-assume: arn:aws:iam::390402568971:role/ArgoStarter
+          role-session-name: ActionRunner
           aws-region: ${{ env.AWS_REGION }}
-      # Hello from AWS: WhoAmI
-      - name: Sts GetCallerIdentity
-        run: |
-          aws sts get-caller-identity
-      - name: Configure kubectl
-        run: |
-          aws eks update-kubeconfig --name serious-rock-mountain
       - uses: cachix/install-nix-action@v27
         with:
           nix_path: nixpkgs=channel:nixos-unstable
-
-  StartArgoWorkflow:
-    runs-on: ubuntu-latest
-    needs: AssumeRoleAndCallIdentity
-    defaults:
-      run:
-        shell: bash
-        working-directory: ./tools/.nix-modules
-    steps:
       - uses: nicknovitski/nix-develop@v1
-      - run: aws eks update-kubeconfig --name serious-rock-mountain
-      - run: kubectl get pods -n argo
+      - run: aws eks update-kubeconfig --name $CLUSTER_NAME
+      - run: kubectl -n argo port-forward service/argo-server 2746:2746 &
+      - name: Generate GitHub App Token
+        uses: tibdex/github-app-token@v2.1.0
+        id: generate-gh-app-token
+        with:
+          app_id: ${{ secrets.CODESENTINEL_ID }}
+          private_key: ${{ secrets.CODESENTINEL_PRIVATE_KEY }}
+      - name: Open a Check
+        id: open-argo-check
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-gh-app-token.outputs.token }}
+        run: |
+          CHECKID=$(gh api -X POST -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -f 'name=Waiting on outcome of OpenAPI checks...' \
+            -f 'head_sha=${{ github.event.pull_request.head.sha }}' \
+            -f 'status=in_progress' \
+            -f 'output[title]=Verifying backwards compatibility or client breakage issues and generating preview clients.' \
+            -f 'output[summary]=n/a' \
+            -f 'output[text]=n/a' \
+            --jq '.id' \
+            /repos/${{ github.repository }}/check-runs)
+          echo "checkId=$CHECKID" >> $GITHUB_OUTPUT
+      - run : |
+          ARGO_TOKEN="Bearer $(kubectl get secret/github.com.service-account-token -n argo -o=jsonpath='{.data.token}' | base64 --decode)"
+          curl --insecure https://localhost:2746/api/v1/events/argo/github-push \
+            -H "Authorization: $ARGO_TOKEN" \
+            -d '{"checkId": "'$GH_CHECK_ID'", "pr": "'$PR_ID'", "repo": "'$REPO'", "headSha": "'$HEAD_SHA'", "baseRef": "'$BASE_REF'", "baseSha": "'$BASE_SHA'", "ghToken": "'$GH_TOKEN'"}'
+        env:
+          GH_TOKEN: ${{ steps.generate-gh-app-token.outputs.token }}
+          GH_CHECK_ID: ${{ steps.open-argo-check.outputs.checkId }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_REF: ${{ github.base_ref }}
+          PR_ID: ${{ github.event.pull_request.number }}

@@ -1,0 +1,582 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Receipt Rendering Service",
+    "version": "1.0.0",
+    "description": "A service that allows the backend to generate AOT receipts for later secure retrieval by the frontend."
+  },
+  "servers": [
+    {
+      "url": "https://rp-service.staging.hitchpin.com",
+      "description": "Staging environment"
+    },
+    {
+      "url": "https://rp-service.hitchpin.com",
+      "description": "Production environment"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sigv4Reference": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "x-amazon-apigateway-authtype": "awsSigv4"
+      }
+    },
+    "schemas": {
+      "RenderReceiptRequest": {
+        "type": "object",
+        "properties": {
+          "receipt": {
+            "type": "object",
+            "properties": {
+              "invoice": {
+                "type": "object",
+                "properties": {
+                  "shareHash": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "description": {
+                    "type": "string"
+                  },
+                  "invoiceNumber": {
+                    "type": "string"
+                  },
+                  "totalOwed": {
+                    "type": "object",
+                    "properties": {
+                      "currencyCode": {
+                        "type": "string",
+                        "enum": [
+                          "usd"
+                        ]
+                      },
+                      "cents": {
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "currencyCode",
+                      "cents"
+                    ]
+                  },
+                  "forName": {
+                    "type": "string",
+                    "maxLength": 64
+                  },
+                  "attachments": {
+                    "type": "array",
+                    "items": {
+                      "allOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "localIdentifier": {
+                              "type": "string",
+                              "maxLength": 256
+                            },
+                            "timestamp": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "updated": {
+                              "type": "string",
+                              "format": "date-time"
+                            },
+                            "showInLib": {
+                              "type": "boolean"
+                            },
+                            "user": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "user"
+                          ]
+                        },
+                        {
+                          "oneOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "attachmentType": {
+                                  "type": "string",
+                                  "enum": [
+                                    "document"
+                                  ]
+                                },
+                                "document": {
+                                  "type": "string",
+                                  "format": "uri"
+                                }
+                              },
+                              "required": [
+                                "attachmentType",
+                                "document"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "attachmentType": {
+                                  "type": "string",
+                                  "enum": [
+                                    "image"
+                                  ]
+                                },
+                                "image": {
+                                  "type": "string",
+                                  "format": "uri"
+                                }
+                              },
+                              "required": [
+                                "attachmentType",
+                                "image"
+                              ]
+                            },
+                            {
+                              "type": "object",
+                              "properties": {
+                                "attachmentType": {
+                                  "type": "string",
+                                  "enum": [
+                                    "text"
+                                  ]
+                                },
+                                "text": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "attachmentType",
+                                "text"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  "sender": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "shareHash",
+                  "title",
+                  "description",
+                  "invoiceNumber",
+                  "totalOwed",
+                  "forName",
+                  "attachments",
+                  "sender"
+                ]
+              },
+              "fees": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "object",
+                      "properties": {
+                        "currencyCode": {
+                          "type": "string",
+                          "enum": [
+                            "usd"
+                          ]
+                        },
+                        "cents": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "currencyCode",
+                        "cents"
+                      ]
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "description"
+                  ]
+                }
+              },
+              "paymentObjects": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "amount": {
+                      "type": "object",
+                      "properties": {
+                        "currencyCode": {
+                          "type": "string",
+                          "enum": [
+                            "usd"
+                          ]
+                        },
+                        "cents": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "currencyCode",
+                        "cents"
+                      ]
+                    },
+                    "last4": {
+                      "type": "string",
+                      "nullable": true,
+                      "pattern": "^[0-9\\*]{2}[0-9]{2}"
+                    },
+                    "paymentMethodName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "amount",
+                    "paymentMethodName"
+                  ]
+                }
+              },
+              "timestamp": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "updated": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "buyer": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "street1": {
+                        "type": "string"
+                      },
+                      "street2": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "postalCode": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "phone",
+                  "address"
+                ]
+              },
+              "seller": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "address": {
+                    "type": "object",
+                    "properties": {
+                      "street1": {
+                        "type": "string"
+                      },
+                      "street2": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "city": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "postalCode": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "storefrontName": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "email",
+                  "phone",
+                  "address",
+                  "storefrontName"
+                ]
+              }
+            },
+            "required": [
+              "invoice",
+              "fees",
+              "paymentObjects",
+              "timestamp",
+              "updated",
+              "buyer",
+              "seller"
+            ]
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pdf"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "svg"
+                ]
+              }
+            ],
+            "default": "pdf"
+          },
+          "style": {
+            "type": "string",
+            "enum": [
+              "modern"
+            ],
+            "default": "modern"
+          },
+          "branding": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "logoUrl": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "receipt"
+        ],
+        "description": "Request to render a receipt."
+      },
+      "RenderReceiptResponse": {
+        "type": "string",
+        "format": "binary"
+      },
+      "CreateRenderedReceiptUrlResponse": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "description": "Response with a URL to a previously rendered receipt."
+      },
+      "CreateRenderedReceiptUrlRequest": {
+        "type": "object",
+        "properties": {
+          "shareHash": {
+            "type": "string"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "pdf"
+                ]
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "svg"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "shareHash",
+          "format"
+        ],
+        "description": "Request to get the URL of a previously rendered receipt."
+      }
+    },
+    "parameters": {}
+  },
+  "paths": {
+    "/render": {
+      "put": {
+        "operationId": "RenderReceipt",
+        "description": "Get user data by its id",
+        "security": [
+          {
+            "sigv4Reference": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Accept",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "application/pdf",
+                "image/svg+xml"
+              ]
+            }
+          }
+        ],
+        "summary": "Register a pre-printed receipt so that the client can securely retrieve the PDF copy.",
+        "tags": [
+          "rendering"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenderReceiptRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response that can be used to retrieve the receipt PDF.",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "$ref": "#/components/schemas/RenderReceiptResponse"
+                }
+              },
+              "image/svg+xml": {
+                "schema": {
+                  "$ref": "#/components/schemas/RenderReceiptResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Could not render receipt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "https://schemas.hitchpin.dev/schemas/ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Could not render receipt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "https://apis.hitchpin.dev/schemas/ProblemDetails"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/render-link": {
+      "post": {
+        "operationId": "CreateRenderedReceiptUrl",
+        "description": "Create pre-rendered receipt the invoice id.",
+        "summary": "Register a pre-printed receipt so that the client can securely retrieve the PDF copy.",
+        "tags": [
+          "rendering"
+        ],
+        "security": [
+          {
+            "sigv4Reference": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRenderedReceiptUrlRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Response that can be used to retrieve the receipt PDF.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateRenderedReceiptUrlResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Could not find rendered receipt.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "type",
+                    "message"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
