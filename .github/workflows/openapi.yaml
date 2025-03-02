@@ -57,11 +57,12 @@ jobs:
           ARGO_TOKEN="Bearer $(kubectl get secret/github.com.service-account-token -n argo -o=jsonpath='{.data.token}' | base64 --decode)"
           curl --insecure https://localhost:2746/api/v1/events/argo/github-push \
             -H "Authorization: $ARGO_TOKEN" \
-            -d '{"checkId": "'$GH_CHECK_ID'", "pr": "'$PR_ID'", "repo": "'$REPO'", "headSha": "'$HEAD_SHA'", "baseRef": "'$BASE_REF'", "ghToken": "'$GH_TOKEN'"}'
+            -d '{"checkId": "'$GH_CHECK_ID'", "pr": "'$PR_ID'", "repo": "'$REPO'", "headSha": "'$HEAD_SHA'", "baseRef": "'$BASE_REF'", "baseSha": "'$BASE_SHA'", "ghToken": "'$GH_TOKEN'"}'
         env:
           GH_TOKEN: ${{ steps.generate-gh-app-token.outputs.token }}
           GH_CHECK_ID: ${{ steps.open-argo-check.outputs.checkId }}
           REPO: ${{ github.repository }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
           BASE_REF: ${{ github.base_ref }}
           PR_ID: ${{ github.event.pull_request.number }}

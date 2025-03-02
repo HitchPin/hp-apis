@@ -29,6 +29,7 @@ spec:
                 "repo": "{{workflow.parameters.repo}}",
                 "headSha": "{{workflow.parameters.headSha}}",
                 "baseRef": "{{workflow.parameters.baseRef}}",
+                "baseSha": "{{workflow.parameters.baseSha}}",
                 "ghToken": "{{workflow.parameters.ghToken}}"
               }
       nodeSelector:

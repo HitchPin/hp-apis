@@ -27,6 +27,9 @@ spec:
       - name: baseRef
         valueFrom:
           event: payload.baseRef
+      - name: baseSha
+        valueFrom:
+          event: payload.baseSha
       - name: ghToken
         valueFrom:
           event: payload.ghToken
