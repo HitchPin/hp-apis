@@ -17,7 +17,6 @@ spec:
   entrypoint: manifest-example
   serviceAccountName: argo-artifacts
   volumes:
-    # You set volumes at the Pod level, then mount them into containers inside that Pod
     - name: git-config
       configMap:
         name: hp-git-config
@@ -71,3 +70,6 @@ spec:
         command: [/bin/sh]
         source: |
           hpoa auth /tmp/manifest.json
+      volumeMounts:
+      - name: git-config
+        mountPath: "/etc/git-config"
