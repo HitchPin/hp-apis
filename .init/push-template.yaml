@@ -72,4 +72,4 @@ spec:
           hpoa auth /tmp/manifest.json
       volumeMounts:
       - name: git-config
-        mountPath: "/etc/git-config"
+        mountPath: "/var/run/git-config"
