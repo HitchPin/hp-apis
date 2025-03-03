@@ -1,6 +1,14 @@
 {
   "configurations": [
     {
+      "type": "bashdb",
+      "request": "launch",
+      "name": "Bash-Debug (select script from list of sh files)",
+      "cwd": "${workspaceFolder}",
+      "program": "${command:SelectScriptName}",
+      "args": []
+    },
+    {
       "name": "Gen",
       "program": "${workspaceFolder}/packages/ts-client-codegen/bin/gen.mts",
       "request": "launch",
