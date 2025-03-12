@@ -125,7 +125,7 @@
             "description": "Could not find rendered receipt.",
             "content": {
               "application/json": {
-                "schema": { "$ref": "https:~1~1schemas.hitchpin.dev~1common~1ProblemDetails.schema.json" }
+                "schema": { "$ref": "https://schemas.hitchpin.dev/common/ProblemDetails.schema.json" }
               }
             }
           }
