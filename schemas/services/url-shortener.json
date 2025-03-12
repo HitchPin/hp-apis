@@ -21,11 +21,6 @@
         "type": "string",
         "default": "P1D",
         "description": "How long before the link stops working.",
-        "examples": [
-          "P1D",
-          "P7D",
-          "P1M"
-        ],
         "externalDocs": {
           "description": "Test suite for valid duration values.",
           "url": "https://github.com/json-schema-org/JSON-Schema-Test-Suite/blob/main/tests/draft2020-12/optional/format/duration.json"
@@ -130,21 +125,7 @@
             "description": "Could not find rendered receipt.",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "type": {
-                      "type": "string"
-                    },
-                    "message": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "type",
-                    "message"
-                  ]
-                }
+                "schema": { "$ref": "https://schemas.hitchpin.dev/common/ProblemDetails.schema.json" }
               }
             }
           }
