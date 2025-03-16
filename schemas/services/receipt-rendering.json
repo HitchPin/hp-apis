@@ -438,6 +438,7 @@
   "paths": {
     "/render": {
       "put": {
+        "operationId": "RenderReceipt",
         "description": "Get user data by its id",
         "parameters": [
           {
@@ -512,6 +513,7 @@
     },
     "/render-link": {
       "post": {
+        "operationId": "CreateReceiptUrl",
         "description": "Create pre-rendered receipt the invoice id.",
         "summary": "Register a pre-printed receipt so that the client can securely retrieve the PDF copy.",
         "tags": [
